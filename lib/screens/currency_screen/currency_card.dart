@@ -2,6 +2,8 @@ import 'package:Talabat/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'controller/currency_card_controller.dart';
+import 'models/model_argument_currency.dart';
+import 'models/model_currency.dart';
 
 class CurrencyCard extends GetWidget<CurrencyCardController> {
   const CurrencyCard({super.key});
@@ -18,7 +20,7 @@ class CurrencyCard extends GetWidget<CurrencyCardController> {
                 builder: (_) => TextField(
                   onChanged: controller.setFilter,
                   decoration: InputDecoration(
-                    labelText: 'search currency',
+                    labelText: 'search by name | rate',
                     labelStyle: const TextStyle(fontSize: 12), //
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
@@ -39,11 +41,12 @@ class CurrencyCard extends GetWidget<CurrencyCardController> {
         body: FutureBuilder<List<Map<String, dynamic>>?>(
           future: controller.getCurrency(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
+            // if (snapshot.connectionState == ConnectionState.waiting) {
+            //   return const Center(
+            //     child: CircularProgressIndicator(),
+            //   );
+            // } else
+              if (snapshot.hasError) {
               return Center(
                 child: Text('Error: ${snapshot.error}'),
               );
@@ -72,8 +75,20 @@ class CurrencyCard extends GetWidget<CurrencyCardController> {
                           IconButton(
                             onPressed: () {
                               Get.offNamed(
-                                AppRoutes.editCurrencyScreen,
-                                arguments: filteredItems[i],
+                                  AppRoutes.addCurrencyScreen,
+                                  arguments:  {
+                                    "currency":
+                                    CurrencyArgument (
+                                      id:CurrencyCardController.currency[i]['currencyId'],
+                                      currency: CurrencyPage(
+                                        currencyName: CurrencyCardController.currency[i]['currencyName'],
+                                        currencySymbol: CurrencyCardController.currency[i]['currencySymbol'],
+                                        currencyRate: CurrencyCardController.currency[i]['currencyRate'],
+                                      ),
+                                    )
+                                  }
+                                //AppRoutes.editCurrencyScreen,
+                               // arguments: filteredItems[i],
                               );
                             },
                             icon: const Icon(Icons.edit, color: Colors.blue),

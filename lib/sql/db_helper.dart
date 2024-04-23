@@ -13,7 +13,7 @@ class DatabaseHelper {
     return openDatabase(path, version: 1, onCreate: _createDatabase);
   }
 
-  static Future<void> _createDatabase(Database db, int version) async {
+  static _createDatabase(Database db, int version) async {
     Batch batch = db.batch();
     batch.execute(
       'CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT, username TEXT, password TEXT, profile_image TEXT)',
@@ -30,27 +30,11 @@ class DatabaseHelper {
     await batch.commit();
   }
 
-  static Future<void> saveUser(String name, String username, String password,
-      String profileImagePath) async {
-    final Database db = await database;
-    await db.insert(
-      'users',
-      {
-        'name': name,
-        'username': username,
-        'password': password,
-        'profile_image': profileImagePath,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-
-  }
   static Future<List<Map<String, dynamic>>> getAllUsers() async {
     final Database db = await database;
     final userList = await db.query('users');
     return userList;
   }
-
 
   // Method to test isUsernameUnique
   static Future<bool> isUsernameUnique(String username) async {
@@ -85,78 +69,10 @@ class DatabaseHelper {
     final storedPasswordHash = result.first['password'];
 
     // Compare the hashed password from the database with the hashed entered password
-    return storedPasswordHash == enteredPasswordHash;
+    return storedPasswordHash == enteredPassword;
   }
 
   ///////////////////////////////////////////////////////////////
-  static Future<void> saveItem(
-      String itemName, String image, double price) async {
-    final Database db = await database;
-    int response = await db.insert(
-      'items',
-      {
-        'itemName': itemName,
-        'image': image,
-        'price': price,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    if (response > 0) {
-      Get.offNamed(
-        AppRoutes.homeScreen,
-      );
-    }
-  }
-
-  static Future<void> updateItem(
-      int itemId, String itemName, String image, double price) async {
-    final Database db = await database;
-    int response = await db.update(
-      'items',
-      {
-        'itemName': itemName,
-        'image': image,
-        'price': price,
-      },
-      where: 'itemId = ?',
-      whereArgs: [itemId],
-    );
-    if (response > 0) {
-      Get.offNamed(
-        AppRoutes.homeScreen,
-      );
-    }
-    //getAllItems();
-  }
-
-  static Future<void> updateUser(
-      int itemId, String name, String username, String password) async {
-    final Database db = await database;
-    int response = await db.update(
-      'users',
-      {
-        'name': name,
-        'username': username,
-        'password': password,
-      },
-      where: 'itemId = ?',
-      whereArgs: [itemId],
-    );
-    if (response > 0) {
-      Get.offNamed(
-        AppRoutes.homeScreen,
-      );
-    }
-    //getAllItems();
-  }
-  static Future<void> deleteItem(int itemId) async {
-    final Database db = await database;
-    await db.delete(
-      'items',
-      where: 'itemId = ?',
-      whereArgs: [itemId],
-    );
-  }
 
   static Future<List<Map<String, dynamic>>> getAllItems() async {
     final Database db = await database;
@@ -178,9 +94,8 @@ class DatabaseHelper {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     if (response > 0) {
-      Get.offNamed(
-        AppRoutes.homeScreen,
-      );
+      // Move to the home screen
+      Get.offNamed(AppRoutes.homeScreen, arguments: 1);
     }
   }
 
@@ -207,9 +122,8 @@ class DatabaseHelper {
       whereArgs: [currencyId],
     );
     if (response > 0) {
-      Get.offNamed(
-        AppRoutes.homeScreen,
-      );
+      Get.offNamed(AppRoutes.homeScreen, arguments: 1);
+
     }
     //getAllItems();
   }
@@ -220,32 +134,35 @@ class DatabaseHelper {
     return currencyList;
   }
 
-
-  static Future<void> saveOrder(
-      String orderDate, int currencyId ,int userId,String status,String type,double orderAmount, double equalOrderAmount) async {
-    final Database db = await database;
-    int response = await db.insert(
-      'orders',
-      {
-        'orderDate': orderDate,
-        'currencyId':currencyId,
-        'userId':userId,
-        'status':status,
-        'type':type,
-        'orderAmount': orderAmount,
-        'equalOrderAmount': equalOrderAmount,
-
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    if (response > 0) {
-      Get.offNamed(
-        AppRoutes.homeScreen,
-      );
-    }
-    getAllOrder();
-
-  }
+  // static Future<void> saveOrder(
+  //     String orderDate,
+  //     int currencyId,
+  //     int userId,
+  //     String status,
+  //     String type,
+  //     double orderAmount,
+  //     double equalOrderAmount) async {
+  //   final Database db = await database;
+  //   int response = await db.insert(
+  //     'orders',
+  //     {
+  //       'orderDate': orderDate,
+  //       'currencyId': currencyId,
+  //       'userId': userId,
+  //       'status': status,
+  //       'type': type,
+  //       'orderAmount': orderAmount,
+  //       'equalOrderAmount': equalOrderAmount,
+  //     },
+  //     conflictAlgorithm: ConflictAlgorithm.replace,
+  //   );
+  //   if (response > 0) {
+  //     Get.offNamed(
+  //       AppRoutes.homeScreen,arguments: 2
+  //     );
+  //   }
+  //   getAllOrder();
+  // }
 
   static Future<List<Map<String, dynamic>>> getAllOrder() async {
     final Database db = await database;
@@ -262,22 +179,76 @@ class DatabaseHelper {
     );
   }
 
-  static Future<Map<String, dynamic>?> getUserById(int userId) async {
-    final Database db = await database;
-
-    final List<Map<String, dynamic>> userList = await db.query('users', where: 'id = ?', whereArgs: [userId]);
-
-    if (userList.isNotEmpty) {
-      return userList.first;
-    } else {
-      return null;
-    }
-  }
+/////////////////////////////////////////////////////////////////////////////
+//   static Future<Map<String, dynamic>?> getUserById(int userId) async {
+//     final Database db = await database;
+//
+//     final List<Map<String, dynamic>> userList =
+//         await db.query('users', where: 'id = ?', whereArgs: [userId]);
+//
+//     if (userList.isNotEmpty) {
+//       return userList.first;
+//     } else {
+//       return null;
+//     }
+//   }
 
   static updateOrderState(String sql) async {
-   final Database  db = await database;
+    final Database db = await database;
     int response = await db.rawUpdate(sql);
     return response;
+  }
+
+  static read(String table) async {
+    Database? myDatabase = await database;
+    List<Map> response = await myDatabase.query(table);
+    return response;
+  }
+
+  static insert(String table, Map<String, dynamic> object) async {
+    Database? mydb = await database;
+    int response = await mydb.insert(table, object);
+    return response;
+  }
+
+  static getLast(String sql) async {
+    Database? mydb = await database;
+    List<Map> response = await mydb.rawQuery(sql);
+    return response;
+  }
+
+  static update(String table, Map<String, dynamic> map, String where) async {
+    Database? mydb = await database;
+    int response = await mydb.update(table, map, where: where);
+    return response;
+  }
+
+  static getOne(String table, String where) async {
+    Database? mydb = await database;
+    List<Map> response = await mydb.query(table, where: where);
+    return response;
+  }
+
+  static delete(String table, String where) async {
+    Database? mydb = await database;
+    int response = await mydb.delete(table, where: where);
+    return response;
+  }
+
+  static readJoin(String sql) async {
+    Database? mydb = await database;
+    List response = await mydb.rawQuery(sql);
+    return response;
+  }
+
+ static Future<List<Map<String, dynamic>>> queryItems(String value) async {
+    Database? db = await database;
+    final List<Map<String, dynamic>> result = await db.query(
+      'items',
+      where: "itemName LIKE ?",
+      whereArgs: ['%$value%'],
+    );
+    return result;
   }
 
 }

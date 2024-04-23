@@ -1,14 +1,28 @@
-import 'package:Talabat/constants/images_constant.dart';
+import 'dart:io';
 import 'package:Talabat/routes/app_routes.dart';
 import 'package:Talabat/screens/items_screen/controller/add_items_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'models/model_item.dart';
+
 
 class AddItemsScreen extends GetWidget<AddItemsController> {
   const AddItemsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+
+    if (Get.arguments != null) {
+      controller. itemNameController.text = Get.arguments['items'].items.itemName;
+      controller.profileImage.value = Get.arguments['items'].items.image;
+      controller. itemPriceController.text =(Get.arguments['items'].items.price).toString();
+    }
+    if (Get.arguments == null) {
+      controller. itemNameController.text = '';
+      controller.profileImage.value  ;
+      controller. itemPriceController.text = '';
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Item'),
@@ -31,18 +45,19 @@ class AddItemsScreen extends GetWidget<AddItemsController> {
               child: Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(8.0),
-                child: Obx(
-                      () => CircleAvatar(
-                    radius: 50,
-                    backgroundImage: controller.profileImage.value != null
-                        ? FileImage(controller.profileImage.value!)
-                    as ImageProvider<Object>
-                        : AssetImage(ImageConstant.imguser),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
+                child:
+                Obx(
+                      () =>CircleAvatar(
+                  radius: 50,
+                  backgroundImage:
+                  controller.profileImage.value != null
+                      ? FileImage(
+                    File(
+                      controller.profileImage.value!,
                     ),
-                  ),
+                  )
+                      : null,
+                ),
                 ),
               ),
             ),
@@ -58,9 +73,18 @@ class AddItemsScreen extends GetWidget<AddItemsController> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Add logic to save item
-                controller.saveItem();
+              onPressed: () async {
+                if (Get.arguments == null) {
+                  controller.saveItem();
+                } else {
+                  Items items = Items(
+                      itemName:   controller.itemNameController.text,
+                      image:   controller.profileImage.value,
+                      price:  double.parse(controller. itemPriceController.text) ,
+                  );
+                  await controller.updateItems(
+                      'items', items, Get.arguments['items'].id);
+                }
               },
               child: const Text('Save'),
             ),

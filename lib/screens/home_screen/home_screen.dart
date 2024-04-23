@@ -2,20 +2,23 @@ import 'package:Talabat/routes/app_routes.dart';
 import 'package:Talabat/screens/currency_screen/currency_card.dart';
 import 'package:Talabat/screens/items_screen/items_card.dart';
 import 'package:Talabat/screens/order_screen/order_card.dart';
+import 'package:Talabat/screens/sign_up_screen/models/model_argument_user.dart';
+import 'package:Talabat/screens/sign_up_screen/models/model_user.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_rx/get_rx.dart';
 import 'controller/home_controller.dart';
 
 class HomeScreen extends GetWidget<HomeController> {
   HomeScreen({super.key});
 
   final List<String> tabs = ['Items', 'Currency', 'ORDER'];
-  int currentTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: tabs.length,
+      initialIndex: controller.currentTabIndex.value,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Home page'),
@@ -26,7 +29,7 @@ class HomeScreen extends GetWidget<HomeController> {
               );
             }).toList(),
             onTap: (index) {
-              currentTabIndex = index;
+              controller.updateCurrentTabIndex(index);
             },
           ),
         ),
@@ -35,10 +38,10 @@ class HomeScreen extends GetWidget<HomeController> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
-              const DrawerHeader(
+             const DrawerHeader(
                 child: Column(
                   children: [
-                    Row(
+                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircleAvatar(
@@ -50,13 +53,13 @@ class HomeScreen extends GetWidget<HomeController> {
                         )
                       ],
                     ),
-                    SizedBox(
+                     SizedBox(
                       height: 20,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("user")
+                        // Text('$username'),
                       ],
                     )
                   ],
@@ -64,14 +67,24 @@ class HomeScreen extends GetWidget<HomeController> {
               ),
               ListTile(
                 title: const Text('Profile'),
-                leading:const Icon(Icons.account_circle),
+                leading: const Icon(Icons.account_circle),
                 onTap: () {
-                  Get.offNamed(
-                    AppRoutes.editUserScreen,
+
+                  Get.offNamed(AppRoutes.signUpScreen,  arguments: {"user":
+                  UserArgument (
+                  id:controller.users[0]['id'],
+                  user: User(
+                  name: controller.users[0]['name'],
+                  username: controller.users[0]['username'],
+                  password: controller.users[0]['password'],
+                  profile_image: controller.users[0]['profile_image'],
+                  )
+                  )
+
+                  }
                   );
                 },
               ),
-
               ListTile(
                 title: const Text('Logout'),
                 leading: const Icon(Icons.exit_to_app), // Add icon for logout

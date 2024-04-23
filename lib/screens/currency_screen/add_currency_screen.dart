@@ -1,4 +1,5 @@
 import 'package:Talabat/routes/app_routes.dart';
+import 'package:Talabat/screens/currency_screen/models/model_currency.dart';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,12 @@ class AddCurrencyScreen extends GetWidget<AddCurrencyController> {
 
   @override
   Widget build(BuildContext context) {
+    if (Get.arguments != null) {
+      controller. currencyNameController.text = Get.arguments['currency'].currency.currencyName;
+      controller. currencySymbolController.text = Get.arguments['currency'].currency.currencySymbol;
+      controller. currencyRateController.text =(Get.arguments['currency'].currency.currencyRate).toString();
+    }
+
 
     return Scaffold(
       appBar: AppBar(
@@ -16,7 +23,7 @@ class AddCurrencyScreen extends GetWidget<AddCurrencyController> {
         leading: IconButton(
           icon:const  Icon(Icons.arrow_back),
           onPressed: () {
-            Get.offNamed( AppRoutes.homeScreen);
+            Get.offNamed(AppRoutes.homeScreen, arguments: 1);
           },
         ),
       ),
@@ -62,9 +69,18 @@ class AddCurrencyScreen extends GetWidget<AddCurrencyController> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  // Add logic to save item
-                 controller.saveCurrency();
+                onPressed: () async {
+                  if (Get.arguments == null) {
+                    controller.saveCurrency();
+                  } else {
+                    CurrencyPage items = CurrencyPage(
+                      currencyName:   controller.currencyNameController.text,
+                      currencySymbol:   controller.currencySymbolController.text,
+                      currencyRate:  double.parse(controller. currencyRateController.text),
+                    );
+                    await controller.updateCurrency(
+                        'currency', items, Get.arguments['currency'].id);
+                  }
                 },
                 child: const Text('Save'),
               ),

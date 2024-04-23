@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 class ItemsCardController extends GetxController {
   TextEditingController searchTextController = TextEditingController();
   RxString filterText = ''.obs;
+  RxList items = [].obs;
+  RxInt deletedIndex = 0.obs;
 
   void setFilter(String value) {
     filterText.value = value;
@@ -15,11 +17,29 @@ class ItemsCardController extends GetxController {
     return await DatabaseHelper.getAllItems();
   }
 
-  Future<void> deleteItem(int index) async {
-    await DatabaseHelper.deleteItem(index);
-    update();
+
+  delete(String table, int id) async {
+    int response = await DatabaseHelper.delete(table, "itemId=$id");
+    if (response > 0) {
+      items.removeWhere((o) => o!['itemId'] == id);
+      update();
+    }
   }
 
+  getItems(String table) async {
+    List<Map> response = await DatabaseHelper.read(table);
+    items.addAll(response);
+  }
+
+  //new
+  filter(String value) {
+    Iterable filterdUsers = items.where((element) =>
+    element['name'].toString().toLowerCase().startsWith(value) ||
+        element['price'].toString().toLowerCase().startsWith(value));
+    items.replaceRange(0, items.length, filterdUsers.toList());
+  }
+
+  //old
   List<Map<String, dynamic>> filterItems(List<Map<String, dynamic>>? items) {
     if (items == null) {
       return [];
@@ -35,6 +55,11 @@ class ItemsCardController extends GetxController {
       return itemName.contains(filterText.value.toLowerCase()) ||
           price.contains(filterText.value.toLowerCase());
     }).toList();
+  }
+  @override
+  void onInit() {
+    super.onInit();
+    getItems('items');
   }
 
 }

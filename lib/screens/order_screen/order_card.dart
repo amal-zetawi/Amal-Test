@@ -1,7 +1,11 @@
 import 'package:Talabat/routes/app_routes.dart';
+import 'package:Talabat/screens/currency_screen/models/model_currency.dart';
 import 'package:Talabat/screens/order_screen/controller/order_card_controller.dart';
+import 'package:Talabat/screens/sign_up_screen/models/model_user.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'models/model_argument_order.dart';
+import 'models/model_order.dart';
 
 class OrderCard extends GetWidget<OrderCardController> {
   const OrderCard({super.key});
@@ -17,7 +21,7 @@ class OrderCard extends GetWidget<OrderCardController> {
                 builder: (_) => TextField(
                   onChanged: controller.setFilter,
                   decoration: InputDecoration(
-                    labelText: 'search order',
+                    labelText: 'search by status | amount',
                     labelStyle: const TextStyle(fontSize: 12), //
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
@@ -26,6 +30,31 @@ class OrderCard extends GetWidget<OrderCardController> {
                   ),
                 ),
               ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                GetX<OrderCardController>(
+                    builder: (OrderCardController controller) {
+                  return GestureDetector(
+                    child: controller.isDescSorted.value
+                        ? const Icon(
+                            Icons.arrow_upward,
+                            color: Color.fromARGB(255, 64, 99, 67),
+                            size: 30.0,
+                          )
+                        : const Icon(
+                            Icons.arrow_downward,
+                            color: Color.fromARGB(255, 64, 99, 67),
+                            size: 30.0,
+                          ),
+                    onTap: () async {
+                      controller.invertSorting();
+                      await controller.sorting();
+                    },
+                  );
+                }),
+              ],
             ),
           ],
         ),
@@ -39,11 +68,12 @@ class OrderCard extends GetWidget<OrderCardController> {
           child: FutureBuilder<List<Map<String, dynamic>>?>(
             future: controller.getOrder(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else if (snapshot.hasError) {
+              // if (snapshot.connectionState == ConnectionState.waiting) {
+              //   return const Center(
+              //     child: CircularProgressIndicator(),
+              //   );
+              // } else
+                if (snapshot.hasError) {
                 return Center(
                   child: Text('Error: ${snapshot.error}'),
                 );
@@ -53,14 +83,17 @@ class OrderCard extends GetWidget<OrderCardController> {
                 return FutureBuilder<List<Map<String, dynamic>>>(
                   future: filteredOrders,
                   builder: (context, filteredSnapshot) {
-                    if (filteredSnapshot.connectionState ==
-                        ConnectionState.waiting) {
+                    if (filteredSnapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
-                        child: CircularProgressIndicator(),
+                        child: CircularProgressIndicator(), // or any other loading indicator
                       );
                     } else if (filteredSnapshot.hasError) {
                       return Center(
                         child: Text('Error: ${filteredSnapshot.error}'),
+                      );
+                    } else if (filteredSnapshot.data == null) {
+                      return const Center(
+                        child: Text('Data is null'), // or any other message or widget
                       );
                     } else {
                       return ListView.builder(
@@ -68,62 +101,160 @@ class OrderCard extends GetWidget<OrderCardController> {
                         shrinkWrap: true,
                         itemCount: filteredSnapshot.data!.length,
                         itemBuilder: (context, i) {
-                          return Card(
-                            child: ListTile(
-                              leading: Text(
-                                  "${filteredSnapshot.data![i]['status']}",
-                                  style: const TextStyle(fontSize: 18)),
-                              title: Column(
-                                children: [
-                                  Text("${filteredSnapshot.data![i]['type']}"),
-                                  Text(
-                                      "amont:${filteredSnapshot.data![i]['orderAmount']}"),
-                                  Text(
-                                      "Eamount:${filteredSnapshot.data![i]['equalOrderAmount']}"),
-                                ],
-                              ),
-                              subtitle: Text(
-                                  "${filteredSnapshot.data![i]['orderDate']}"),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Delete IconButton
-                                  IconButton(
-                                    onPressed: () {
-                                      controller.deleteOrder(
-                                          filteredSnapshot.data![i]['orderId']);
-                                    },
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.red),
-                                  ),
-                                  // Edit IconButton
-                                  IconButton(
-                                    onPressed: () {
-                                      Get.offNamed(
-                                        AppRoutes.editOrderScreen,
-                                        arguments: filteredSnapshot.data![i],
-                                      );
-                                    },
-                                    icon: const Icon(Icons.edit,
-                                        color: Colors.blue),
-                                  ),
-                                  //Obx(() =>
-                                  Switch(
-                                    value: filteredSnapshot.data![i]
-                                            ['status'] ==
-                                        'Paid',
-                                    onChanged: (value) {
-                                      // Implement logic to update status
-                                      if (value) {
-                                        // If value is true, set status to 'Paid', else set to 'Not Paid'
-                                        // controller.updateStatus(filteredSnapshot.data![i]['orderId'], 'Paid');
-                                      } else {
-                                        //controller.updateStatus(filteredSnapshot.data![i]['orderId'], 'Not Paid');
-                                      }
-                                    },
-                                  ),
-                                  // ),
-                                ],
+                          return GetBuilder<OrderCardController>(
+                            // init: OrderCardController(),
+                            builder: (controller) => Card(
+                              child: ListTile(
+                                leading: Text(
+                                  "${controller.orders[i]['status']}",
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        "Type: ${controller.orders[i]['type']}"),
+                                    Text(
+                                        "Equal Amount: ${controller.orders[i]['equalOrderAmount']}"),
+                                    Text(
+                                        "Currency Name: ${controller.orders[i]['currencyName']}"),
+                                    Text(
+                                        "User Name: ${controller.orders[i]['username']}"),
+                                    Text(
+                                        "${controller.orders[i]['orderDate']}"
+                                    ),
+                                    Text(
+                                        "Amount: ${controller.orders[i]['orderAmount']}"),
+                                  ],
+                                ),
+                                // subtitle: Row(
+                                //   crossAxisAlignment: CrossAxisAlignment.start,
+                                //   children: [
+                                //
+                                //     IconButton(
+                                //       onPressed: () {
+                                //         // controller.incre(
+                                //         //   itemcontroller
+                                //         //       .cartItems[index]
+                                //         //   ['itemName'],
+                                //         // );
+                                //         // orederController.totalPrice(
+                                //         //     itemcontroller
+                                //         //         .cartItems[
+                                //         //     index]['price'],
+                                //         //     orederController
+                                //         //         .response3.value);
+                                //       },
+                                //       icon: const Icon(Icons.add),
+                                //     ),
+                                //     const SizedBox(
+                                //         width:
+                                //         5), // Reduce SizedBox width
+                                //    Flexible(
+                                //       child: Obx(
+                                //             () => Text(
+                                //               '${controller.response3.value}'
+                                //               ,
+                                //               overflow: TextOverflow
+                                //                   .ellipsis, // Handle overflow if necessary
+                                //             ),
+                                //       ),
+                                //     ),
+                                //     const SizedBox(
+                                //         width:
+                                //         5), // Reduce SizedBox width
+                                //     IconButton(
+                                //       onPressed: () {
+                                //         // orederController.decrement(
+                                //         //     itemcontroller
+                                //         //         .cartItems[
+                                //         //     index]['itemName']);
+                                //         // orederController.totalPrice(
+                                //         //     itemcontroller
+                                //         //         .cartItems[
+                                //         //     index]['price'],
+                                //         //     orederController
+                                //         //         .response3.value);
+                                //       },
+                                //       icon:
+                                //       const Icon(Icons.remove),
+                                //     ),
+                                //   ],
+                                // ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        controller.deleteOrder(filteredSnapshot
+                                            .data![i]['orderId']);
+                                      },
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        Get.offNamed(
+                                          AppRoutes.addOrderScreen,
+                                          arguments: OrderArgument(
+                                            id: controller.orders[i]['orderId'],
+                                            user: User(
+                                              name: controller.orders[i]
+                                                  ['name'],
+                                              username: '',
+                                              password: '',
+                                              profile_image: null,
+                                            ),
+                                            currency: CurrencyPage(
+                                              currencyName: controller.orders[i]
+                                                  ['currencyName'],
+                                              currencySymbol: '',
+                                              currencyRate: controller.orders[i]
+                                                  ['currencyRate'],
+                                            ),
+                                            order: Order(
+                                              currencyId: controller.orders[i]
+                                                  ['currencyId'],
+                                              userId: controller.orders[i]
+                                                  ['userId'],
+                                              orderDate: controller.orders[i]
+                                                  ['orderDate'],
+                                              orderAmount: controller.orders[i]
+                                                  ['orderAmount'],
+                                              equalOrderAmount:
+                                                  controller.orders[i]
+                                                      ['equalOrderAmount'],
+                                              status: controller.orders[i]
+                                                  ['status'],
+                                              type: controller.orders[i]
+                                                  ['type'],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.blue),
+                                    ),
+                                    Switch(
+                                      value: controller.orders[i]['status'] ==
+                                              'paid'
+                                          ? true
+                                          : false,
+                                      onChanged: (value) async {
+                                        // Implement logic to update status
+                                        if (value) {
+                                          // If value is true, set status to 'Paid', else set to 'Not Paid'
+                                          // int res = await controller.updateStates(value,filteredSnapshot.data![i]['orderId']);
+                                          // if (res > 0) {
+                                          //   await controller.updateLocalOrder(filteredSnapshot.data![i]['orderId']);
+                                          // }
+                                        } else {
+                                          // controller.updateStatus(filteredSnapshot.data![i]['orderId'], 'Not Paid');
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );

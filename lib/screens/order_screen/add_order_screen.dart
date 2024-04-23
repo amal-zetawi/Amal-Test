@@ -13,13 +13,24 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
   final CurrencyCardController currencyController =
       Get.put(CurrencyCardController());
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
 
   AddOrderScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    controller.selectedCurrency.value = 'defaultCurrencyId';
+    if (Get.arguments != null) {
+      controller.updateRate(Get.arguments.currency.currencyRate);
+      controller.upadateCurrencyId(Get.arguments.order.currencyId);
+      controller.upadateUserId(Get.arguments.order.userId);
+      controller.dateController.text = Get.arguments.order.orderDate;
+      controller.amountController.text =
+          Get.arguments.order.orderAmount.toString();
+      controller.equalAmmountController.text =
+          Get.arguments.order.equalOrderAmount.toString();
+      controller.type = Get.arguments.order.type;
+      controller.isChecked.value =
+          Get.arguments.order.status == 1 ? true : false;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -27,7 +38,7 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Get.offNamed(AppRoutes.homeScreen);
+            Get.offNamed(AppRoutes.homeScreen, arguments: 2);
           },
         ),
       ),
@@ -60,9 +71,10 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: DatabaseHelper.getAllCurrency(),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
+                  // if (snapshot.connectionState == ConnectionState.waiting) {
+                  //   return Container();
+                  // } else
+                  if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (snapshot.data == null) {
                     return const Text('No data available');
@@ -93,9 +105,10 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: DatabaseHelper.getAllUsers(),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
+                  // if (snapshot.connectionState == ConnectionState.waiting) {
+                  //   return const CircularProgressIndicator();
+                  // } else
+                  if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (snapshot.data == null) {
                     return const Text('No data available');
@@ -131,9 +144,10 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                   "Return Purchased Order"
                 ]),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
+                  // if (snapshot.connectionState == ConnectionState.waiting) {
+                  //   return const CircularProgressIndicator();
+                  // } else
+                  if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (snapshot.data == null) {
                     // Add null check here
@@ -166,9 +180,10 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               FutureBuilder<List<String>>(
                 future: Future.value(["Paid", "Not Paid"]),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
+                  // if (snapshot.connectionState == ConnectionState.waiting) {
+                  //   return const CircularProgressIndicator();
+                  // } else
+                  if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else {
                     final itemList = snapshot.data!;
@@ -195,33 +210,37 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               ),
               const SizedBox(height: 10),
               FutureBuilder<List<Map<String, dynamic>>>(
-                future: DatabaseHelper.getAllItems(),
+                future: controller.queryItems(_searchController
+                    .text), // Pass the query text to your method
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
+                  if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
-                  } else if (snapshot.data == null) {
+                  } else if (snapshot.data == null || snapshot.data!.isEmpty) {
                     return const Text('No data available');
                   } else {
                     final itemsList = snapshot.data!;
                     return Autocomplete<Map<String, dynamic>>(
                       optionsBuilder: (TextEditingValue textEditingValue) {
-                        final query = textEditingValue.text.toLowerCase();
-                        return itemsList.where((item) {
-                          final itemName =
-                              item['itemName'].toString().toLowerCase();
-                          return itemName.contains(query);
-                        }).toList();
+                        if (textEditingValue.text.isEmpty) {
+                          return <Map<String, dynamic>>[]; // Return empty list
+                        } else {
+                          final query = textEditingValue.text.toLowerCase();
+                          return itemsList.where((item) {
+                            final itemName =
+                                item['itemName'].toString().toLowerCase();
+                            return itemName.contains(query);
+                          }).toList();
+                        }
                       },
                       displayStringForOption: (Map<String, dynamic> item) =>
                           item['itemName'].toString(),
                       onSelected: (Map<String, dynamic> item) {
                         _searchController.text = item['itemName'].toString();
                         controller.selectedItems.add(_searchController.text);
-                        _priceController.text = item['price'].toString();
+                        controller.priceController.text =
+                            item['price'].toString();
                         controller.selectedItemsPrice
-                            .add(_priceController.text);
+                            .add(controller.priceController.text);
                       },
                       fieldViewBuilder: (BuildContext context,
                           TextEditingController fieldTextEditingController,
@@ -265,9 +284,31 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               const SizedBox(height: 10),
               Obx(
                 () => Card(
-                  child: ListTile(
-                    title: Text(
-                        "Selected items: ${controller.selectedItems}${controller.selectedItemsPrice}"),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        title: Text(
+                          "items: ${controller.selectedItems.toSet().toList().join(', ')}\nprice: ${controller.selectedItemsPrice.toSet().toList().join(', ')}",
+                        ),
+                      ),
+                      // Add additional widgets here
+                      TextField(
+                        onChanged: (value){
+                          controller.totalPrice();
+                          controller.amountController.text = controller.amount.value.toString();
+                        },
+                        controller: controller.countController,
+                        decoration: const InputDecoration(
+                          labelText: 'count',
+                        ),
+                      ),
+                      // TextField(
+                      //   controller: controller.priceController,
+                      //   decoration: const InputDecoration(
+                      //     labelText: 'price',
+                      //   ),
+                      // ),
+                    ],
                   ),
                 ),
               ),
@@ -277,6 +318,10 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                 decoration: const InputDecoration(
                   labelText: 'Amount',
                 ),
+                onChanged: (value) {
+                  // Call the totalPrice function whenever the text field changes
+                 controller. totalPrice();
+                },
               ),
               const SizedBox(height: 10),
               TextField(
@@ -287,9 +332,12 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  // Add logic to save item
-                  controller.saveOrder();
+                onPressed: () async {
+                  if (Get.arguments == null) {
+                    controller.saveOrder();
+                  } else {
+                    controller.editOrder();
+                  }
                 },
                 child: const Text('Save Order'),
               ),

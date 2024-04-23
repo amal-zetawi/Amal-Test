@@ -1,3 +1,5 @@
+import 'package:Talabat/routes/app_routes.dart';
+import 'package:Talabat/screens/order_screen/models/model_order.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:Talabat/sql/db_helper.dart';
@@ -10,7 +12,9 @@ class AddOrderController extends GetxController {
   TextEditingController currencyRateController = TextEditingController();
   TextEditingController amountController = TextEditingController();
   TextEditingController equalAmmountController = TextEditingController();
-
+  final TextEditingController priceController = TextEditingController();
+  TextEditingController countController =TextEditingController();
+  //AutoComplete1 autoComplete1 = Get.put(AutoComplete1());
 
   var selectedCurrency = ''.obs;
   RxDouble rate = 0.0.obs;
@@ -27,13 +31,18 @@ class AddOrderController extends GetxController {
    int idCurrency=0;
   RxInt selectStates=0.obs;
   RxList orders = [].obs;
+  RxDouble amount=0.0.obs;
   RxDouble eAmount=0.0.obs;
+
   int idUser =0;
 
   updateEAmount(double value) {
     eAmount.value = value;
   }
 
+  updateAmount(double value) {
+   amount.value = value;
+  }
   updateRate(double value) {
     rate.value = value;
   }
@@ -45,20 +54,54 @@ class AddOrderController extends GetxController {
   RxList<String> selectedItems = <String>[].obs;
   RxList<String> selectedItemsPrice = <String>[].obs;
 
+  double sumSelectedItemsPrice() {
+    // Convert each string in selectedItemsPrice to double and sum them up
+    double sum = selectedItemsPrice.fold(0, (previousValue, element) => previousValue + double.parse(element));
+    return sum;
+  }
 
   @override
   void onInit() {
     super.onInit();
+
     dateController = TextEditingController();
     currencyController = TextEditingController();
-    selectedCurrency.value = 'defaultCurrencyId';
+
+    // ever(amount, (_) {
+    //   amountController.text=totalPrice().toString();
+    // });
+
     ever(eAmount, (double value) {
       double equalAmount = equalAmmount(double.parse(amountController.text), value);
       equalAmmountController.text = equalAmount.toString();
     });
+
+
+    getOrders();
     super.onInit();
+
   }
 
+
+  getOrders() async {
+    List response = await DatabaseHelper.readJoin('''
+    SELECT users.name AS name, users.username AS username, 
+    users.password AS password, users.profile_image AS profile_image,
+    currency.currencyName AS currencyName, currency.currencySymbol, currency.currencyRate,
+    orders.orderDate, orders.status AS status, orders.orderAmount AS orderAmount,
+    orders.type AS type, orders.equalOrderAmount AS equalOrderAmount, orders.orderId AS orderId,
+    orders.userId, orders.currencyId
+    FROM orders JOIN users 
+    ON users.id=orders.userId JOIN currency 
+    ON currency.currencyId=orders.currencyId
+''');
+    orders.addAll(response);
+  }
+
+   updateAmountController() {
+    // Update the amountController.text whenever the amount value changes
+    amountController.text = amount.value.toStringAsFixed(2);
+  }
 
   Future<void> saveCurrency() async {
     if (currencyNameController.text.isEmpty ||
@@ -141,7 +184,23 @@ class AddOrderController extends GetxController {
 
     }
   }
+  Future<void>  editOrder()async {
+    double doubleRate = rate.value;
+    updateEAmount(doubleRate);
+    double equalA= equalAmmount(double.parse(amountController.text),doubleRate);
 
+
+    Order order = Order(
+      currencyId:  idCurrency,
+      userId:  idUser,
+      orderDate:  dateController.text,
+      orderAmount: double.parse(amountController.text),
+      equalOrderAmount:equalA,
+      status:  status,
+      type:  type,);
+    updateOrder(
+        'orders', order, Get.arguments.id);
+}
   Future<void> saveOrder() async {
     // if (itemNameController.text.isEmpty ||
     //     itemPriceController.text.isEmpty) {
@@ -152,17 +211,18 @@ class AddOrderController extends GetxController {
     double doubleRate = rate.value;
     updateEAmount(doubleRate);
    double equalA= equalAmmount(double.parse(amountController.text),doubleRate);
-    await DatabaseHelper.saveOrder(
-        dateController.text,
-        idCurrency,
-        idUser,
-        status,
-        type,
-       double.parse(amountController.text) ,
-        equalA
-    );
 
-   // DatabaseHelper.getAllItems();
+
+    Order order = Order(
+        currencyId:  idCurrency,
+        userId:  idUser,
+        orderDate:  dateController.text,
+        orderAmount: double.parse(amountController.text),
+        equalOrderAmount:equalA,
+        status:  status,
+        type:  type,);
+
+    insert('orders', order);
   }
 
   void addItem(String item) {
@@ -173,14 +233,69 @@ class AddOrderController extends GetxController {
     selectedItems.remove(item);
   }
 
+  updateOrder(String table, Order order, int id) async {
+    Map<String, dynamic> orderMap = order.toMap();
+    int res = await DatabaseHelper.update(table, orderMap, "orderId=$id");
+    if (res > 0) {
+      Get.offNamed(
+          AppRoutes.homeScreen, arguments: 2
+      );
+     // await updateLocalOrder(id);
+    }
+  }
+
+  insert(String table, Order order) async {
+    Map<String, dynamic> orderMap = order.toMap();
+    int response = await DatabaseHelper.insert(table, orderMap);
+   List<Map> inserted = await getLast();
+    Map insertedOrder = inserted[0];
+    orders.add(insertedOrder);
+    if(response > 0 ){
+      Get.offNamed(AppRoutes.homeScreen,arguments: 2);
+    }
+    return response;
+  }
+
+  getLast() async {
+    List<Map> response = await DatabaseHelper.getLast('''
+ SELECT users.name AS name, users.username AS username, 
+    users.password AS password, users.profile_image AS profile_image,
+    currency.currencyName AS currencyName, currency.currencySymbol, currency.currencyRate,
+    orders.orderDate, orders.status AS status, orders.orderAmount AS orderAmount,
+    orders.type AS type, orders.equalOrderAmount AS equalOrderAmount, orders.orderId AS orderId,
+    orders.userId, orders.currencyId
+    FROM orders JOIN users 
+    ON users.id=orders.userId JOIN currency 
+    ON currency.currencyId=orders.currencyId ORDER BY orders.orderId DESC LIMIT 1
+''');
+
+    return response;
+  }
+
   updateOrderState(int state, int id) async {
     int response = await DatabaseHelper.updateOrderState('''
-    UPDATE 'orders' SET status=$state WHERE order_Id=$id
+    UPDATE 'orders' SET status=$state WHERE orderId=$id
 ''');
     if (response > 0) {
       //await updateLocalSolution(id);
     }
   }
+
+  totalPrice( ) {
+    double sum = selectedItemsPrice.fold(0, (previousValue, element) => previousValue + double.parse(element));
+    print("sum$sum");
+    String countText = countController.text;
+    double count = double.tryParse(countText) ?? 0.0;
+    amount.value = (sum*count);
+    // return (amount.value = (sum*count));
+    // print("amount$amount");
+    // amountController.text = amount.value.toString();
+  }
+
+  Future<List<Map<String, dynamic>>> queryItems(String value) async {
+    return await DatabaseHelper.queryItems(value);
+  }
+
 
 }
 

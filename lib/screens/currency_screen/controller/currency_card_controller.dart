@@ -5,7 +5,12 @@ import 'package:get/get.dart';
 class CurrencyCardController extends GetxController {
   TextEditingController searchTextController = TextEditingController();
   RxString filterText = ''.obs;
-  RxList currency = [].obs;
+  static RxList currency = [].obs;
+
+  getCurrencies(String table) async {
+    List<Map> response = await DatabaseHelper.read(table);
+    currency.addAll(response);
+  }
 
   void setFilter(String value) {
     filterText.value = value;
@@ -29,13 +34,18 @@ class CurrencyCardController extends GetxController {
     if (filterText.isEmpty) {
       return currency;
     }
-
     return currency.where((currency) {
       final String itemName = currency['currencyName'].toString().toLowerCase();
       final String price = currency['currencyRate'].toString().toLowerCase();
       return itemName.contains(filterText.value.toLowerCase()) ||
           price.contains(filterText.value.toLowerCase());
     }).toList();
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    getCurrencies('currency');
   }
 
 }
