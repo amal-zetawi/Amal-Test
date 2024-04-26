@@ -14,7 +14,8 @@ class AddOrderController extends GetxController {
   TextEditingController equalAmmountController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   TextEditingController countController =TextEditingController();
-  //AutoComplete1 autoComplete1 = Get.put(AutoComplete1());
+  TextEditingController priceEditingController =TextEditingController();
+  final List<TextEditingController> countControllers = [];
 
   var selectedCurrency = ''.obs;
   RxDouble rate = 0.0.obs;
@@ -33,7 +34,7 @@ class AddOrderController extends GetxController {
   RxList orders = [].obs;
   RxDouble amount=0.0.obs;
   RxDouble eAmount=0.0.obs;
-
+  RxDouble price=0.0.obs;
   int idUser =0;
 
   updateEAmount(double value) {
@@ -51,11 +52,10 @@ class AddOrderController extends GetxController {
     selectedCurrency.value = currency;
   }
 
-  RxList<String> selectedItems = <String>[].obs;
+  RxList<Map<String, dynamic>> selectedItems = <Map<String, dynamic>>[].obs;
   RxList<String> selectedItemsPrice = <String>[].obs;
 
   double sumSelectedItemsPrice() {
-    // Convert each string in selectedItemsPrice to double and sum them up
     double sum = selectedItemsPrice.fold(0, (previousValue, element) => previousValue + double.parse(element));
     return sum;
   }
@@ -67,9 +67,6 @@ class AddOrderController extends GetxController {
     dateController = TextEditingController();
     currencyController = TextEditingController();
 
-    // ever(amount, (_) {
-    //   amountController.text=totalPrice().toString();
-    // });
 
     ever(eAmount, (double value) {
       double equalAmount = equalAmmount(double.parse(amountController.text), value);
@@ -99,7 +96,6 @@ class AddOrderController extends GetxController {
   }
 
    updateAmountController() {
-    // Update the amountController.text whenever the amount value changes
     amountController.text = amount.value.toStringAsFixed(2);
   }
 
@@ -225,8 +221,8 @@ class AddOrderController extends GetxController {
     insert('orders', order);
   }
 
-  void addItem(String item) {
-    selectedItems.add(item);
+  void addItem(Map<String, dynamic> item) {
+    selectedItems.add(item );
   }
 
   void removeItem(String item) {
@@ -240,7 +236,6 @@ class AddOrderController extends GetxController {
       Get.offNamed(
           AppRoutes.homeScreen, arguments: 2
       );
-     // await updateLocalOrder(id);
     }
   }
 
@@ -277,8 +272,16 @@ class AddOrderController extends GetxController {
     UPDATE 'orders' SET status=$state WHERE orderId=$id
 ''');
     if (response > 0) {
-      //await updateLocalSolution(id);
     }
+  }
+
+  updatePrice(double price, int id) async {
+    int response = await DatabaseHelper.updateOrderState('''
+    UPDATE 'items' SET price=$price WHERE itemId=$id
+''');
+    if (response > 0) {
+    }
+
   }
 
   totalPrice( ) {
@@ -287,15 +290,20 @@ class AddOrderController extends GetxController {
     String countText = countController.text;
     double count = double.tryParse(countText) ?? 0.0;
     amount.value = (sum*count);
-    // return (amount.value = (sum*count));
-    // print("amount$amount");
-    // amountController.text = amount.value.toString();
   }
 
   Future<List<Map<String, dynamic>>> queryItems(String value) async {
     return await DatabaseHelper.queryItems(value);
   }
 
+  // updatePrice(String newPrice) {
+  //   price.value=double.parse(newPrice);
+  // }
+
+  // void updatePrice(int index, String newPrice) {
+  //   selectedItemsPrice[index] = double.parse(newPrice);
+  //   totalPrice(); // Recalculate total price
+  // }
 
 }
 

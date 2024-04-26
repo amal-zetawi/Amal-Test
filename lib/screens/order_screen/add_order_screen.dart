@@ -13,9 +13,8 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
   final CurrencyCardController currencyController =
       Get.put(CurrencyCardController());
   final TextEditingController _searchController = TextEditingController();
-
+  
   AddOrderScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     if (Get.arguments != null) {
@@ -71,9 +70,6 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: DatabaseHelper.getAllCurrency(),
                 builder: (context, snapshot) {
-                  // if (snapshot.connectionState == ConnectionState.waiting) {
-                  //   return Container();
-                  // } else
                   if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (snapshot.data == null) {
@@ -89,7 +85,6 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                         return DropdownMenuItem(
                           onTap: () {
                             controller.upadateCurrencyId(value['currencyId']);
-                            // controller.upadateCurrencyName(value['currencyName']);
                             controller.updateRate(value['currencyRate']);
                           },
                           value: value['currencyId'],
@@ -105,9 +100,6 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: DatabaseHelper.getAllUsers(),
                 builder: (context, snapshot) {
-                  // if (snapshot.connectionState == ConnectionState.waiting) {
-                  //   return const CircularProgressIndicator();
-                  // } else
                   if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (snapshot.data == null) {
@@ -124,7 +116,6 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                           onTap: () {
                             controller.upadateUserId(value['id']);
                             controller.upadateUserName(value['name']);
-                            // controller.updateRate(value['currencyRate']);
                           },
                           value: value['id'],
                           child: Text(value['name'].toString()),
@@ -144,9 +135,6 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                   "Return Purchased Order"
                 ]),
                 builder: (context, snapshot) {
-                  // if (snapshot.connectionState == ConnectionState.waiting) {
-                  //   return const CircularProgressIndicator();
-                  // } else
                   if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (snapshot.data == null) {
@@ -180,9 +168,6 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               FutureBuilder<List<String>>(
                 future: Future.value(["Paid", "Not Paid"]),
                 builder: (context, snapshot) {
-                  // if (snapshot.connectionState == ConnectionState.waiting) {
-                  //   return const CircularProgressIndicator();
-                  // } else
                   if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else {
@@ -210,8 +195,7 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
               ),
               const SizedBox(height: 10),
               FutureBuilder<List<Map<String, dynamic>>>(
-                future: controller.queryItems(_searchController
-                    .text), // Pass the query text to your method
+                future: controller.queryItems(_searchController.text),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
@@ -222,12 +206,11 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                     return Autocomplete<Map<String, dynamic>>(
                       optionsBuilder: (TextEditingValue textEditingValue) {
                         if (textEditingValue.text.isEmpty) {
-                          return <Map<String, dynamic>>[]; // Return empty list
+                          return <Map<String, dynamic>>[];
                         } else {
                           final query = textEditingValue.text.toLowerCase();
                           return itemsList.where((item) {
-                            final itemName =
-                                item['itemName'].toString().toLowerCase();
+                            final itemName = item['itemName'].toString().toLowerCase();
                             return itemName.contains(query);
                           }).toList();
                         }
@@ -236,11 +219,17 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                           item['itemName'].toString(),
                       onSelected: (Map<String, dynamic> item) {
                         _searchController.text = item['itemName'].toString();
-                        controller.selectedItems.add(_searchController.text);
-                        controller.priceController.text =
-                            item['price'].toString();
-                        controller.selectedItemsPrice
-                            .add(controller.priceController.text);
+
+                        final bool isDuplicate = controller.selectedItems.any(
+                                (selectedItem) =>
+                            selectedItem['itemId'] == item['itemId']);
+
+                        if (!isDuplicate) {
+                          controller.selectedItems.add(item);
+                          controller.priceController.text = item['price'].toString();
+                          controller.selectedItemsPrice
+                              .add(controller.priceController.text);
+                        }
                       },
                       fieldViewBuilder: (BuildContext context,
                           TextEditingController fieldTextEditingController,
@@ -258,21 +247,22 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                         );
                       },
                       optionsViewBuilder: (BuildContext context,
-                          AutocompleteOnSelected<Map<String, dynamic>>
-                              onSelected,
+                          AutocompleteOnSelected<Map<String, dynamic>> onSelected,
                           Iterable<Map<String, dynamic>> options) {
                         return Material(
                           child: SizedBox(
-                            height: 200.0, // Adjust height as needed
-                            child: ListView(
-                              children: options.map((item) {
-                                return ListTile(
-                                  title: Text(item['itemName'].toString()),
-                                  onTap: () {
-                                    onSelected(item);
-                                  },
-                                );
-                              }).toList(),
+                            height: 200.0,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: options.map((item) {
+                                  return ListTile(
+                                    title: Text(item['itemName'].toString()),
+                                    onTap: () {
+                                      onSelected(item);
+                                    },
+                                  );
+                                }).toList(),
+                              ),
                             ),
                           ),
                         );
@@ -281,47 +271,82 @@ class AddOrderScreen extends GetWidget<AddOrderController> {
                   }
                 },
               ),
+
               const SizedBox(height: 10),
-              Obx(
-                () => Card(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        title: Text(
-                          "items: ${controller.selectedItems.toSet().toList().join(', ')}\nprice: ${controller.selectedItemsPrice.toSet().toList().join(', ')}",
+              SingleChildScrollView(
+                child:
+                Obx(() {
+                  // Ensure countControllers list matches the selectedItems list length
+                  if (controller.countControllers.length != controller.selectedItems.length) {
+                    controller.countControllers.clear();
+                    for (int i = 0; i < controller.selectedItems.length; i++) {
+                     controller. countControllers.add(TextEditingController());
+                    }
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: controller.selectedItems.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text(
+                                "Item: ${controller.selectedItems[index]['itemName']}\nPrice: \$${controller.selectedItemsPrice[index]}\n",
+                              ),
+                            ),
+                            TextFormField(
+                              controller: TextEditingController(
+                                text: controller.selectedItemsPrice[index],
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: 'Enter new price',
+                              ),
+
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                controller.selectedItemsPrice[index] = value;
+                                double newPrice = double.parse(controller.selectedItemsPrice[index]);
+                                int itemId = controller.selectedItems[index]['itemId'];
+                                controller.updatePrice(newPrice, itemId);
+                                String countText = controller.countControllers[index].text; // Use the correct controller
+                                double count = double.tryParse(countText) ?? 0.0;
+                                controller.amount.value += (newPrice * count);
+                                //  controller. updateAmount( controller.amount.value);
+                                controller.amountController.text = controller.amount.value.toString();
+                              },
+                            ),
+                            TextField(
+                              controller:controller. countControllers[index], // Assign the appropriate controller
+                              decoration: const InputDecoration(
+                                labelText: 'count',
+                              ),
+                              onChanged: (value) {
+                                double newPrice = double.parse(controller.selectedItemsPrice[index]);
+                                int itemId = controller.selectedItems[index]['itemId'];
+                                controller.updatePrice(newPrice, itemId);
+                                String countText = controller.countControllers[index].text; // Use the correct controller
+                                double count = double.tryParse(countText) ?? 0.0;
+                                controller.amount.value += (newPrice * count);
+                             //  controller. updateAmount( controller.amount.value);
+                                controller.amountController.text = controller.amount.value.toString();
+                              },
+                            ),
+                          ],
                         ),
-                      ),
-                      // Add additional widgets here
-                      TextField(
-                        onChanged: (value){
-                          controller.totalPrice();
-                          controller.amountController.text = controller.amount.value.toString();
-                        },
-                        controller: controller.countController,
-                        decoration: const InputDecoration(
-                          labelText: 'count',
-                        ),
-                      ),
-                      // TextField(
-                      //   controller: controller.priceController,
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'price',
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                ),
+                      );
+                    },
+                  );
+                }),
               ),
+
               const SizedBox(height: 20),
               TextField(
                 controller: controller.amountController,
                 decoration: const InputDecoration(
                   labelText: 'Amount',
                 ),
-                onChanged: (value) {
-                  // Call the totalPrice function whenever the text field changes
-                 controller. totalPrice();
-                },
               ),
               const SizedBox(height: 10),
               TextField(

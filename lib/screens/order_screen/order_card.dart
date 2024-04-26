@@ -73,7 +73,7 @@ class OrderCard extends GetWidget<OrderCardController> {
               //     child: CircularProgressIndicator(),
               //   );
               // } else
-                if (snapshot.hasError) {
+              if (snapshot.hasError) {
                 return Center(
                   child: Text('Error: ${snapshot.error}'),
                 );
@@ -83,9 +83,11 @@ class OrderCard extends GetWidget<OrderCardController> {
                 return FutureBuilder<List<Map<String, dynamic>>>(
                   future: filteredOrders,
                   builder: (context, filteredSnapshot) {
-                    if (filteredSnapshot.connectionState == ConnectionState.waiting) {
+                    if (filteredSnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return const Center(
-                        child: CircularProgressIndicator(), // or any other loading indicator
+                        child:
+                            CircularProgressIndicator(), // or any other loading indicator
                       );
                     } else if (filteredSnapshot.hasError) {
                       return Center(
@@ -93,7 +95,8 @@ class OrderCard extends GetWidget<OrderCardController> {
                       );
                     } else if (filteredSnapshot.data == null) {
                       return const Center(
-                        child: Text('Data is null'), // or any other message or widget
+                        child: Text(
+                            'Data is null'), // or any other message or widget
                       );
                     } else {
                       return ListView.builder(
@@ -121,8 +124,7 @@ class OrderCard extends GetWidget<OrderCardController> {
                                     Text(
                                         "User Name: ${controller.orders[i]['username']}"),
                                     Text(
-                                        "${controller.orders[i]['orderDate']}"
-                                    ),
+                                        "${controller.orders[i]['orderDate']}"),
                                     Text(
                                         "Amount: ${controller.orders[i]['orderAmount']}"),
                                   ],
