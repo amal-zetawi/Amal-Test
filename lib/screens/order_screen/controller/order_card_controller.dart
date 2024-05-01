@@ -2,6 +2,8 @@ import 'package:Talabat/sql/db_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'add_order_controller.dart';
+
 class OrderCardController extends GetxController {
   TextEditingController searchTextController = TextEditingController();
   RxString filterText = ''.obs;
@@ -9,7 +11,7 @@ class OrderCardController extends GetxController {
   String status = '';
   RxList orders = [].obs;
   RxBool isDescSorted = false.obs;
-  RxInt response3 =1.obs;
+  RxInt response3 = 1.obs;
 
   invertSorting() {
     isDescSorted.value = !isDescSorted.value;
@@ -68,6 +70,7 @@ class OrderCardController extends GetxController {
 
   Future<void> deleteOrder(int index) async {
     await DatabaseHelper.deleteOrder(index);
+    await DatabaseHelper.deleteOrderItems(index);
     update();
   }
 

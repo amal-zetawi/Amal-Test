@@ -17,7 +17,6 @@ class ItemsCardController extends GetxController {
     return await DatabaseHelper.getAllItems();
   }
 
-
   delete(String table, int id) async {
     int response = await DatabaseHelper.delete(table, "itemId=$id");
     if (response > 0) {
@@ -34,7 +33,7 @@ class ItemsCardController extends GetxController {
   //new
   filter(String value) {
     Iterable filterdUsers = items.where((element) =>
-    element['name'].toString().toLowerCase().startsWith(value) ||
+        element['name'].toString().toLowerCase().startsWith(value) ||
         element['price'].toString().toLowerCase().startsWith(value));
     items.replaceRange(0, items.length, filterdUsers.toList());
   }
@@ -56,10 +55,10 @@ class ItemsCardController extends GetxController {
           price.contains(filterText.value.toLowerCase());
     }).toList();
   }
+
   @override
   void onInit() {
     super.onInit();
     getItems('items');
   }
-
 }

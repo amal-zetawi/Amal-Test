@@ -11,17 +11,19 @@ class AddCurrencyScreen extends GetWidget<AddCurrencyController> {
   @override
   Widget build(BuildContext context) {
     if (Get.arguments != null) {
-      controller. currencyNameController.text = Get.arguments['currency'].currency.currencyName;
-      controller. currencySymbolController.text = Get.arguments['currency'].currency.currencySymbol;
-      controller. currencyRateController.text =(Get.arguments['currency'].currency.currencyRate).toString();
+      controller.currencyNameController.text =
+          Get.arguments['currency'].currency.currencyName;
+      controller.currencySymbolController.text =
+          Get.arguments['currency'].currency.currencySymbol;
+      controller.currencyRateController.text =
+          (Get.arguments['currency'].currency.currencyRate).toString();
     }
-
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Currency'),
         leading: IconButton(
-          icon:const  Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Get.offNamed(AppRoutes.homeScreen, arguments: 1);
           },
@@ -35,19 +37,21 @@ class AddCurrencyScreen extends GetWidget<AddCurrencyController> {
             children: [
               TextField(
                 decoration: const InputDecoration(labelText: 'Currency Name'),
-                controller:
-                controller.currencyNameController, // Add controller for item name
+                controller: controller
+                    .currencyNameController, // Add controller for item name
               ),
               const SizedBox(height: 20),
               TextField(
                 decoration: const InputDecoration(labelText: 'Currency Symbol'),
-                controller:controller.currencySymbolController, // Add controller for price
+                controller: controller
+                    .currencySymbolController, // Add controller for price
               ),
               const SizedBox(height: 20),
               TextField(
                 decoration: const InputDecoration(labelText: 'Currency Rate'),
                 keyboardType: TextInputType.number,
-                controller: controller.currencyRateController, // Add controller for price
+                controller: controller
+                    .currencyRateController, // Add controller for price
               ),
               const SizedBox(height: 40),
               ElevatedButton(
@@ -60,8 +64,9 @@ class AddCurrencyScreen extends GetWidget<AddCurrencyController> {
                     showCurrencyCode: true,
                     favorite: ['eur'],
                     onSelect: (Currency currency) {
-                      controller.currencySymbolController.text = currency.symbol;
-                      controller. currencyNameController.text = currency.name;
+                      controller.currencySymbolController.text =
+                          currency.symbol;
+                      controller.currencyNameController.text = currency.name;
                     },
                   );
                 },
@@ -74,9 +79,10 @@ class AddCurrencyScreen extends GetWidget<AddCurrencyController> {
                     controller.saveCurrency();
                   } else {
                     CurrencyPage items = CurrencyPage(
-                      currencyName:   controller.currencyNameController.text,
-                      currencySymbol:   controller.currencySymbolController.text,
-                      currencyRate:  double.parse(controller. currencyRateController.text),
+                      currencyName: controller.currencyNameController.text,
+                      currencySymbol: controller.currencySymbolController.text,
+                      currencyRate:
+                          double.parse(controller.currencyRateController.text),
                     );
                     await controller.updateCurrency(
                         'currency', items, Get.arguments['currency'].id);

@@ -1,6 +1,6 @@
 class Items {
   final String itemName;
-  final        image;
+  final image;
   final double price;
 
   Items({

@@ -19,7 +19,7 @@ class AddItemsController extends GetxController {
   Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile =
-    await picker.pickImage(source: ImageSource.gallery);
+        await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       profileImage.value = (pickedFile.path);
     } else {
@@ -34,16 +34,16 @@ class AddItemsController extends GetxController {
       List<Map> lastInserted = await getLast();
       Map lastItems = lastInserted[0];
       items.add(lastItems);
-        Get.offNamed(
-          AppRoutes.homeScreen,
-        );
+      Get.offNamed(
+        AppRoutes.homeScreen,
+      );
     }
     return response;
   }
 
   getLast() async {
-    return await DatabaseHelper
-        .getLast('''SELECT * FROM items ORDER BY itemId DESC LIMIT 1''');
+    return await DatabaseHelper.getLast(
+        '''SELECT * FROM items ORDER BY itemId DESC LIMIT 1''');
   }
 
   getItems(String table) async {
@@ -105,7 +105,7 @@ class AddItemsController extends GetxController {
       image: profileImagePath,
       price: double.parse(itemPriceController.text),
     );
-    insert('items',items);
+    insert('items', items);
   }
 
   getCurrentUser(String userName) async {

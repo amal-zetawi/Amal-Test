@@ -88,7 +88,8 @@ class SignUpController extends GetxController {
         profile_image: profileImagePath);
 
     insert('users', user);
-    Get.snackbar('Completed', 'successfully registered', colorText: Colors.green);
+    Get.snackbar('Completed', 'successfully registered',
+        colorText: Colors.green);
     Get.offNamed(
       AppRoutes.loginScreen,
     );

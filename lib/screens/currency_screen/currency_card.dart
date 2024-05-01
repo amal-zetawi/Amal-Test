@@ -34,7 +34,8 @@ class CurrencyCard extends GetWidget<CurrencyCardController> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-                Get.offNamed(AppRoutes.addCurrencyScreen); // Navigate to currency add screen
+            Get.offNamed(
+                AppRoutes.addCurrencyScreen); // Navigate to currency add screen
           },
           child: const Icon(Icons.add),
         ),
@@ -46,7 +47,7 @@ class CurrencyCard extends GetWidget<CurrencyCardController> {
             //     child: CircularProgressIndicator(),
             //   );
             // } else
-              if (snapshot.hasError) {
+            if (snapshot.hasError) {
               return Center(
                 child: Text('Error: ${snapshot.error}'),
               );
@@ -60,36 +61,42 @@ class CurrencyCard extends GetWidget<CurrencyCardController> {
                 itemBuilder: (context, i) {
                   return Card(
                     child: ListTile(
-                      leading:Text("${filteredItems[i]['currencySymbol']}",style: const TextStyle(fontSize: 18),),
-                      title:  Text("${filteredItems[i]['currencyName']}"),
+                      leading: Text(
+                        "${filteredItems[i]['currencySymbol']}",
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      title: Text("${filteredItems[i]['currencyName']}"),
                       subtitle: Text("${filteredItems[i]['currencyRate']}"),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
                             onPressed: () {
-                              controller.deleteCurrency(filteredItems[i]['currencyId']);
+                              controller.deleteCurrency(
+                                  filteredItems[i]['currencyId']);
                             },
                             icon: const Icon(Icons.delete, color: Colors.red),
                           ),
                           IconButton(
                             onPressed: () {
-                              Get.offNamed(
-                                  AppRoutes.addCurrencyScreen,
-                                  arguments:  {
-                                    "currency":
-                                    CurrencyArgument (
-                                      id:CurrencyCardController.currency[i]['currencyId'],
+                              Get.offNamed(AppRoutes.addCurrencyScreen,
+                                  arguments: {
+                                    "currency": CurrencyArgument(
+                                      id: CurrencyCardController.currency[i]
+                                          ['currencyId'],
                                       currency: CurrencyPage(
-                                        currencyName: CurrencyCardController.currency[i]['currencyName'],
-                                        currencySymbol: CurrencyCardController.currency[i]['currencySymbol'],
-                                        currencyRate: CurrencyCardController.currency[i]['currencyRate'],
+                                        currencyName: CurrencyCardController
+                                            .currency[i]['currencyName'],
+                                        currencySymbol: CurrencyCardController
+                                            .currency[i]['currencySymbol'],
+                                        currencyRate: CurrencyCardController
+                                            .currency[i]['currencyRate'],
                                       ),
                                     )
                                   }
-                                //AppRoutes.editCurrencyScreen,
-                               // arguments: filteredItems[i],
-                              );
+                                  //AppRoutes.editCurrencyScreen,
+                                  // arguments: filteredItems[i],
+                                  );
                             },
                             icon: const Icon(Icons.edit, color: Colors.blue),
                           ),

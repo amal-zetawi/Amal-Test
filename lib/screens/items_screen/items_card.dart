@@ -36,20 +36,15 @@ class ItemsCard extends GetWidget<ItemsCardController> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Get.offNamed(AppRoutes.addItemsScreen); // Navigate to currency add screen
+            Get.offNamed(
+                AppRoutes.addItemsScreen); // Navigate to currency add screen
           },
           child: const Icon(Icons.add),
         ),
-
         body: FutureBuilder<List<Map<String, dynamic>>?>(
           future: controller.getItem(),
           builder: (context, snapshot) {
-            // if (snapshot.connectionState == ConnectionState.waiting) {
-            //   return const Center(
-            //     child: CircularProgressIndicator(),
-            //   );
-            // } else
-              if (snapshot.hasError) {
+            if (snapshot.hasError) {
               return Center(
                 child: Text('Error: ${snapshot.error}'),
               );
@@ -77,29 +72,26 @@ class ItemsCard extends GetWidget<ItemsCardController> {
                           IconButton(
                             onPressed: () async {
                               await controller.delete(
-                              'items', filteredItems[i]['itemId']);
-                            // controller.deleteItem(filteredItems[i]['itemId']);
+                                  'items', filteredItems[i]['itemId']);
                             },
                             icon: const Icon(Icons.delete, color: Colors.red),
                           ),
-
                           IconButton(
                             onPressed: () {
-                              Get.offNamed(
-                                AppRoutes.addItemsScreen,
-                                arguments:  {
-                                  "items":
-                                  ItemArgument (
-                                  id:controller.items[i]['itemId'],
-                                  items: Items(
-                                    itemName: controller.items[i]['itemName'],
-                                    image: controller.items[i]['image'],
-                                    price: controller.items[i]['price'],
-                                  ),
-                              )
-                              }
-                                //filteredItems[i],
-                              );
+                              Get.offNamed(AppRoutes.addItemsScreen,
+                                  arguments: {
+                                    "items": ItemArgument(
+                                      id: controller.items[i]['itemId'],
+                                      items: Items(
+                                        itemName: controller.items[i]
+                                            ['itemName'],
+                                        image: controller.items[i]['image'],
+                                        price: controller.items[i]['price'],
+                                      ),
+                                    )
+                                  }
+                                  //filteredItems[i],
+                                  );
                             },
                             icon: const Icon(Icons.edit, color: Colors.blue),
                           ),

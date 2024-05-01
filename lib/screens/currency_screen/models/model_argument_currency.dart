@@ -1,4 +1,3 @@
-
 import 'model_currency.dart';
 
 class CurrencyArgument {

@@ -14,7 +14,7 @@ import 'package:Talabat/screens/splash_screen/binding/splash_binding.dart';
 import 'package:Talabat/screens/splash_screen/splash_screen.dart';
 import 'package:get/get.dart';
 
-class AppRoutes{
+class AppRoutes {
   static const String initialRoute = '/initialRoute';
   static const String splashScreen = '/splash_screen';
   static const String loginScreen = '/login_screen';
@@ -27,7 +27,6 @@ class AppRoutes{
   static const String addOrderScreen = '/add_order_screen';
   static const String editUserScreen = '/edit_user_screen';
   static const String editOrderScreen = '/edit_order_screen';
-
 
   static List<GetPage> pages = [
     GetPage(
@@ -48,37 +47,36 @@ class AppRoutes{
       name: signUpScreen,
       page: () => const SignUpScreen(),
       bindings: [
-        SignUpBinding (),
+        SignUpBinding(),
       ],
     ),
     GetPage(
       name: homeScreen,
-
-      page: () =>HomeScreen(),
+      page: () => HomeScreen(),
       bindings: [
-        HomeBinding (),
+        HomeBinding(),
       ],
     ),
     GetPage(
       name: addItemsScreen,
-      page: () =>const AddItemsScreen(),
+      page: () => const AddItemsScreen(),
       bindings: [
-        AddItemsBinding (),
+        AddItemsBinding(),
       ],
     ),
     GetPage(
       name: addCurrencyScreen,
-      page: () =>const AddCurrencyScreen(),
+      page: () => const AddCurrencyScreen(),
       bindings: [
-        AddCurrencyBinding (),
+        AddCurrencyBinding(),
       ],
     ),
     GetPage(
       name: addOrderScreen,
-      page: () =>  AddOrderScreen(),
+      page: () => AddOrderScreen(),
       bindings: [
-        AddOrderBinding (),
+        AddOrderBinding(),
       ],
     ),
-];
+  ];
 }

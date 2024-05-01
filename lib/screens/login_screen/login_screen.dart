@@ -9,11 +9,8 @@ class LoginScreen extends GetWidget<LoginController> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(
-          // title: Text('Login User',style: TextStyle(color: Colors.deepOrange,fontSize: 16),),
-          ),
+      appBar: AppBar(),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -59,7 +56,6 @@ class LoginScreen extends GetWidget<LoginController> {
             ElevatedButton(
               onPressed: () {
                 controller.login();
-
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(350, 50),

@@ -12,7 +12,6 @@ class SplashScreen extends GetWidget<SplashController> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SizedBox(
-          // width: double.maxFinite,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

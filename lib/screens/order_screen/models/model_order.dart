@@ -9,12 +9,12 @@ class Order {
 
   Order(
       {required this.currencyId,
-        required this.userId,
-        required this.orderDate,
-        required this.orderAmount,
-        required this.equalOrderAmount,
-        required this.status,
-        required this.type});
+      required this.userId,
+      required this.orderDate,
+      required this.orderAmount,
+      required this.equalOrderAmount,
+      required this.status,
+      required this.type});
 
   Map<String, dynamic> toMap() {
     return {

@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:Talabat/routes/app_routes.dart';
-import 'package:crypto/crypto.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -27,6 +25,10 @@ class DatabaseHelper {
     batch.execute(
       'CREATE TABLE orders(orderId INTEGER PRIMARY KEY, orderDate TEXT, currencyId INTEGER, userId INTEGER, status TEXT, type TEXT,orderAmount REAL, equalOrderAmount REAL, FOREIGN KEY(userId) REFERENCES users(id), FOREIGN KEY(currencyId) REFERENCES currency(currencyId))',
     );
+
+    batch.execute(
+      'CREATE TABLE ordersItems(id INTEGER PRIMARY KEY, count INTEGER ,price REAL ,itemName TEXT,itemId INTEGER,orderId INTEGER,FOREIGN KEY(itemId) REFERENCES items(itemId), FOREIGN KEY(orderId) REFERENCES orders(orderId) )',
+    );
     await batch.commit();
   }
 
@@ -51,8 +53,8 @@ class DatabaseHelper {
       String enteredUsername, String enteredPassword) async {
     final Database db = await database;
     // Hash the entered password using SHA-256
-    final enteredPasswordHash =
-        sha256.convert(utf8.encode(enteredPassword)).toString();
+    // final enteredPasswordHash =
+    //     sha256.convert(utf8.encode(enteredPassword)).toString();
     // Query the database to retrieve the hashed password for the entered username
     final List<Map<String, dynamic>> result = await db.query(
       'users',
@@ -123,7 +125,6 @@ class DatabaseHelper {
     );
     if (response > 0) {
       Get.offNamed(AppRoutes.homeScreen, arguments: 1);
-
     }
     //getAllItems();
   }
@@ -179,6 +180,14 @@ class DatabaseHelper {
     );
   }
 
+  static Future<void> deleteOrderItems(int itemId) async {
+    final Database db = await database;
+    await db.delete(
+      'ordersItems',
+      where: 'orderId = ?',
+      whereArgs: [itemId],
+    );
+  }
 /////////////////////////////////////////////////////////////////////////////
 //   static Future<Map<String, dynamic>?> getUserById(int userId) async {
 //     final Database db = await database;
@@ -241,7 +250,7 @@ class DatabaseHelper {
     return response;
   }
 
- static Future<List<Map<String, dynamic>>> queryItems(String value) async {
+  static Future<List<Map<String, dynamic>>> queryItems(String value) async {
     Database? db = await database;
     final List<Map<String, dynamic>> result = await db.query(
       'items',
@@ -251,4 +260,16 @@ class DatabaseHelper {
     return result;
   }
 
-}
+  static Future<List<Map<String, dynamic>>> queryOrderItems(int orderId) async {
+     Database? db = await database;
+     List<Map<String, dynamic>> orderItems = await db.query(
+       'ordersItems',
+       where: 'orderId = ?',
+       whereArgs: [orderId],
+     );
+    // print("aya$orderItems");
+     return orderItems;
+  }
+
+  }
+

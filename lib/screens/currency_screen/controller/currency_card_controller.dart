@@ -26,7 +26,8 @@ class CurrencyCardController extends GetxController {
     update();
   }
 
-  List<Map<String, dynamic>> filterCurrency(List<Map<String, dynamic>>? currency) {
+  List<Map<String, dynamic>> filterCurrency(
+      List<Map<String, dynamic>>? currency) {
     if (currency == null) {
       return [];
     }
@@ -47,5 +48,4 @@ class CurrencyCardController extends GetxController {
     super.onInit();
     getCurrencies('currency');
   }
-
 }

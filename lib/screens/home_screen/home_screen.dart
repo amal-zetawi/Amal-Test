@@ -6,7 +6,6 @@ import 'package:Talabat/screens/sign_up_screen/models/model_argument_user.dart';
 import 'package:Talabat/screens/sign_up_screen/models/model_user.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_rx/get_rx.dart';
 import 'controller/home_controller.dart';
 
 class HomeScreen extends GetWidget<HomeController> {
@@ -38,10 +37,10 @@ class HomeScreen extends GetWidget<HomeController> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
-             const DrawerHeader(
+              const DrawerHeader(
                 child: Column(
                   children: [
-                     Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircleAvatar(
@@ -53,7 +52,7 @@ class HomeScreen extends GetWidget<HomeController> {
                         )
                       ],
                     ),
-                     SizedBox(
+                    SizedBox(
                       height: 20,
                     ),
                     Row(
@@ -69,20 +68,16 @@ class HomeScreen extends GetWidget<HomeController> {
                 title: const Text('Profile'),
                 leading: const Icon(Icons.account_circle),
                 onTap: () {
-
-                  Get.offNamed(AppRoutes.signUpScreen,  arguments: {"user":
-                  UserArgument (
-                  id:controller.users[0]['id'],
-                  user: User(
-                  name: controller.users[0]['name'],
-                  username: controller.users[0]['username'],
-                  password: controller.users[0]['password'],
-                  profile_image: controller.users[0]['profile_image'],
-                  )
-                  )
-
-                  }
-                  );
+                  Get.offNamed(AppRoutes.signUpScreen, arguments: {
+                    "user": UserArgument(
+                        id: controller.users[0]['id'],
+                        user: User(
+                          name: controller.users[0]['name'],
+                          username: controller.users[0]['username'],
+                          password: controller.users[0]['password'],
+                          profile_image: controller.users[0]['profile_image'],
+                        ))
+                  });
                 },
               ),
               ListTile(

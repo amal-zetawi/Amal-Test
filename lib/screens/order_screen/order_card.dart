@@ -4,8 +4,10 @@ import 'package:Talabat/screens/order_screen/controller/order_card_controller.da
 import 'package:Talabat/screens/sign_up_screen/models/model_user.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'controller/add_order_controller.dart';
 import 'models/model_argument_order.dart';
 import 'models/model_order.dart';
+import 'models/model_order_items.dart';
 
 class OrderCard extends GetWidget<OrderCardController> {
   const OrderCard({super.key});
@@ -68,11 +70,6 @@ class OrderCard extends GetWidget<OrderCardController> {
           child: FutureBuilder<List<Map<String, dynamic>>?>(
             future: controller.getOrder(),
             builder: (context, snapshot) {
-              // if (snapshot.connectionState == ConnectionState.waiting) {
-              //   return const Center(
-              //     child: CircularProgressIndicator(),
-              //   );
-              // } else
               if (snapshot.hasError) {
                 return Center(
                   child: Text('Error: ${snapshot.error}'),
@@ -129,60 +126,6 @@ class OrderCard extends GetWidget<OrderCardController> {
                                         "Amount: ${controller.orders[i]['orderAmount']}"),
                                   ],
                                 ),
-                                // subtitle: Row(
-                                //   crossAxisAlignment: CrossAxisAlignment.start,
-                                //   children: [
-                                //
-                                //     IconButton(
-                                //       onPressed: () {
-                                //         // controller.incre(
-                                //         //   itemcontroller
-                                //         //       .cartItems[index]
-                                //         //   ['itemName'],
-                                //         // );
-                                //         // orederController.totalPrice(
-                                //         //     itemcontroller
-                                //         //         .cartItems[
-                                //         //     index]['price'],
-                                //         //     orederController
-                                //         //         .response3.value);
-                                //       },
-                                //       icon: const Icon(Icons.add),
-                                //     ),
-                                //     const SizedBox(
-                                //         width:
-                                //         5), // Reduce SizedBox width
-                                //    Flexible(
-                                //       child: Obx(
-                                //             () => Text(
-                                //               '${controller.response3.value}'
-                                //               ,
-                                //               overflow: TextOverflow
-                                //                   .ellipsis, // Handle overflow if necessary
-                                //             ),
-                                //       ),
-                                //     ),
-                                //     const SizedBox(
-                                //         width:
-                                //         5), // Reduce SizedBox width
-                                //     IconButton(
-                                //       onPressed: () {
-                                //         // orederController.decrement(
-                                //         //     itemcontroller
-                                //         //         .cartItems[
-                                //         //     index]['itemName']);
-                                //         // orederController.totalPrice(
-                                //         //     itemcontroller
-                                //         //         .cartItems[
-                                //         //     index]['price'],
-                                //         //     orederController
-                                //         //         .response3.value);
-                                //       },
-                                //       icon:
-                                //       const Icon(Icons.remove),
-                                //     ),
-                                //   ],
-                                // ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

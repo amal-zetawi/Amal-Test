@@ -6,7 +6,9 @@ import 'package:get_storage/get_storage.dart';
 Future<void> main() async {
   await GetStorage.init();
   bool rememberMe = GetStorage().read('rememberMe') ?? false;
-  runApp(MyApp(initialRoute: rememberMe ? AppRoutes.homeScreen : AppRoutes.initialRoute));
+  runApp(MyApp(
+      initialRoute:
+          rememberMe ? AppRoutes.homeScreen : AppRoutes.initialRoute));
 }
 
 class MyApp extends StatelessWidget {
@@ -15,12 +17,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return GetMaterialApp(
-        debugShowCheckedModeBanner: false,
-        fallbackLocale: const Locale('en', 'US'),
-        title: 'orders_app',
-        initialRoute: initialRoute,
-        getPages: AppRoutes.pages,
-      );
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      fallbackLocale: const Locale('en', 'US'),
+      title: 'orders_app',
+      initialRoute: initialRoute,
+      getPages: AppRoutes.pages,
+    );
   }
 }

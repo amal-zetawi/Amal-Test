@@ -17,8 +17,7 @@ class AddCurrencyController extends GetxController {
     List inserted = await getLast();
     Map insertedCurrency = inserted[0];
     currencies.add(insertedCurrency);
-    print("currencies$currencies");
-    if(response >0){
+    if (response > 0) {
       Get.offNamed(AppRoutes.homeScreen, arguments: 1);
     }
     return response;
@@ -45,17 +44,14 @@ class AddCurrencyController extends GetxController {
       currencySymbol: currencySymbolController.text,
       currencyRate: double.parse(currencyRateController.text),
     );
-    insert('currency',currency);
-
+    insert('currency', currency);
   }
 
   updateCurrency(String table, CurrencyPage currency, int id) async {
     Map<String, dynamic> userMap = currency.toMap();
     int res = await DatabaseHelper.update(table, userMap, "currencyId=$id");
     if (res > 0) {
-      Get.offNamed(
-        AppRoutes.homeScreen, arguments: 1
-      );
+      Get.offNamed(AppRoutes.homeScreen, arguments: 1);
     }
   }
 }
